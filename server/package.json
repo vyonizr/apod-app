@@ -1,7 +1,7 @@
 {
   "name": "nasa-apod-restapi",
   "version": "1.0.0",
-  "description": "NASA APoD REST API",
+  "description": "NASA APOD REST API",
   "main": "src/index.js",
   "author": "Fitrahtur Rahman <fitrahtur@gmail.com>",
   "license": "MIT",

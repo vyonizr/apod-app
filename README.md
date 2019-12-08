@@ -1,4 +1,4 @@
-# NASA APoD - REST API
+# NASA APOD - REST API
 
 ## Routes
 
