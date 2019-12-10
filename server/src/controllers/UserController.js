@@ -6,7 +6,7 @@ class UserController {
     const { username } = req.params
 
     try {
-      const foundUser = await UserModel.findOne({ username }, 'username favorites friends')
+      const foundUser = await UserModel.findOne({ username }, '_id username favorites friends')
 
       if (!foundUser) {
         setError('Username not found', 404)
@@ -122,6 +122,124 @@ class UserController {
         default: {
           res.status(500).json(err)
         }
+      }
+    }
+  }
+
+  static async addAFriend(req, res) {
+    const { username } = req.params
+    const { id } = req.authenticatedUser
+    const { targetUsername }  = req.body
+
+    try {
+      if (targetUsername === username) {
+        setError('Cannot send a friend request to oneself', 400)
+      }
+      else {
+        const updatedUser = await UserModel.findOneAndUpdate({ username: targetUsername }, { $addToSet: { pendingFriends: id } }, { new: true })
+
+        if (updatedUser) {
+          res.status(200).json({
+            status: 'success',
+            data: {}
+          })
+        }
+        else {
+          setError('The requested username was not found', 404)
+        }
+      }
+    }
+    catch (err) {
+      if (err.name = 'CustomError') {
+        res.status(err.statusCode).json({
+          status: 'fail',
+          message: err.message
+        })
+      }
+      else {
+        res.status(500).json({
+          status: 'fail',
+          message: err
+        })
+      }
+    }
+  }
+
+  static async rejectAFriendRequest(req, res) {
+    const { username } = req.params
+    const { id } =req.authenticatedUser
+
+    try {
+      const rejectedUserID = UserModel.findOne({ username }, '_id')
+      await UserModel.findByIdAndUpdate(id, { $pull: { pendingFriends: rejectedUserID } }, { new: true })
+
+      res.status(200).json({
+        status: 'success',
+        data: {}
+      })
+    }
+    catch (err) {
+      res.status(500).json({
+        status: 'fail',
+        message: err
+      })
+    }
+  }
+
+  static async acceptAFriendRequest(req, res) {
+    const { friendUsername } = req.params
+    const { id } =req.authenticatedUser
+
+    try {
+      const acceptedUser = await UserModel.find({ username: friendUsername }, '_id')
+
+      await UserModel.findByIdAndUpdate(id, { $addToSet: { friends: acceptedUser._id } }, { new: true })
+
+      res.status(200).json({
+        status: 'success',
+        data: {}
+      })
+    }
+    catch (err) {
+      console.log(err, '<== ERROR_CONTROLLER')
+      res.status(500).json({
+        status: 'fail',
+        message: err
+      })
+    }
+  }
+
+  static async removeAFriend(req, res) {
+    const { username } = req.body
+    const { id } = req.authenticatedUser
+    const loggedInUsername = req.authenticatedUser.username
+
+    try {
+      if (loggedInUsername === username) {
+        setError('Cannot unfriend oneself', 400)
+      }
+      else {
+        const removedUserID = UserModel.findOne({ username }, '_id')
+        await UserModel.findByIdAndUpdate(id, { $pull: { friends: removedUserID } }, { new: true })
+      }
+
+      res.status(200).json({
+        status: 'success',
+        data: {}
+      })
+    }
+    catch (err) {
+      if (err.name = 'CustomError') {
+        res.status(err.statusCode).json({
+          status: 'fail',
+          message: err.message
+        })
+      }
+      else {
+        res.status(500).json({
+          status: 'fail',
+          message: err
+        })
       }
     }
   }
