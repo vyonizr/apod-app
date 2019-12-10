@@ -1,4 +1,6 @@
-# NASA APOD - REST API
+# NASA APOD
+
+[![Build Status](https://travis-ci.org/vyonizr/apod-app.svg?branch=develop)](https://travis-ci.org/vyonizr/apod-app) [![codecov](https://codecov.io/gh/vyonizr/apod-app/branch/develop/graph/badge.svg)](https://codecov.io/gh/vyonizr/apod-app)
 
 ## Routes
 

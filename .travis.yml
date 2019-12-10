@@ -18,3 +18,4 @@ install:
   - yarn add dotenv
 script:
   - yarn test
+  - codecov $CODECOV_TOKEN
