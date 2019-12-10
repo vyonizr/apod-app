@@ -7,7 +7,12 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=dev nodemon src/index.js",
-    "test": "NODE_ENV=test nyc mocha src/__test__ --timeout=5000 --exit"
+    "test": "NODE_ENV=test nyc mocha src/__test__ --timeout=5000 --exit",
+    "coverage": "NODE_ENV=test nyc report --reporter=text-lcov > coverage.lcov && codecov"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vyonizr/apod-app.git"
   },
   "private": true,
   "dependencies": {
@@ -22,6 +27,7 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
+    "codecov": "^3.6.1",
     "mocha": "^6.2.2",
     "nodemon": "^1.19.4",
     "nyc": "^14.1.1"
