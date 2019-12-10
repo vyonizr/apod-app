@@ -1,6 +1,6 @@
 # NASA APOD
 
-[![Build Status](https://travis-ci.org/vyonizr/apod-app.svg?branch=develop)](https://travis-ci.org/vyonizr/apod-app) [![codecov](https://codecov.io/gh/vyonizr/apod-app/branch/develop/graph/badge.svg)](https://codecov.io/gh/vyonizr/apod-app)
+[![Build Status](https://travis-ci.org/vyonizr/apod-app.svg?branch=develop)](https://travis-ci.org/vyonizr/apod-app) [![codecov](https://codecov.io/gh/vyonizr/apod-app/branch/develop/graph/badge.svg)](https://codecov.io/gh/vyonizr/apod-app) [![Greenkeeper badge](https://badges.greenkeeper.io/vyonizr/apod-app.svg)](https://greenkeeper.io/)
 
 ## Routes
 
