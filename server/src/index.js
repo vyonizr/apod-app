@@ -6,8 +6,6 @@ const cors = require('cors')
 const PORT = process.env.PORT || 80
 const routes = require('./routes')
 
-const { getRandomDate } = require('./helpers')
-
 const app = express()
 app.use(cors())
 app.use(express.json())
