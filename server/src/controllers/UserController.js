@@ -129,7 +129,7 @@ class UserController {
   static async addAFriend(req, res) {
     const { username } = req.params
     const { id } = req.authenticatedUser
-    const { targetUsername }  = req.body
+    const { targetUsername } = req.body
 
     try {
       if (targetUsername === username) {
@@ -191,7 +191,7 @@ class UserController {
     const { id } =req.authenticatedUser
 
     try {
-      const acceptedUser = await UserModel.find({ username: friendUsername }, '_id')
+      const acceptedUser = await UserModel.findOne({ username: friendUsername }, '_id')
 
       await UserModel.findByIdAndUpdate(id, { $addToSet: { friends: acceptedUser._id } }, { new: true })
 
@@ -201,7 +201,6 @@ class UserController {
       })
     }
     catch (err) {
-      console.log(err, '<== ERROR_CONTROLLER')
       res.status(500).json({
         status: 'fail',
         message: err
