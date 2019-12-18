@@ -12,15 +12,16 @@ const endpoint = {
   userRegister: '/users/register',
   userLogin: '/users/login',
   getAUser: (username) => `/users/profile/${username}`,
-  addAFriend: (username) => `/users/profile/${username}/friends`,
-  acceptFriendRequest: (username, friendUsername) => `/users/profile/${username}/friends/${friendUsername}/accept`,
-  rejectFriendRequest: (username, friendUsername) => `/users/profile/${username}/friends/${friendUsername}/reject`,
-  removeAFriend: (username, friendUsername) => `/users/profile/${username}/friends/${friendUsername}/remove`
+  addAFriend: (selfUsername) => `/users/profile/${selfUsername}/friends`,
+  acceptFriendRequest: (selfUsername, friendUsername) => `/users/profile/${selfUsername}/friends/${friendUsername}/accept`,
+  rejectFriendRequest: (selfUsername, friendUsername) => `/users/profile/${selfUsername}/friends/${friendUsername}/reject`,
+  removeAFriend: (selfUsername, friendUsername) => `/users/profile/${selfUsername}/friends/${friendUsername}/remove`
 }
 
 const notFoundUsername = 'notfounduser'
 let userToken = null
 let secondUserToken = null
+let thirdUserToken = null
 const firstUser = {
   username: 'anrupanna',
   password: 'Apod123'
@@ -31,14 +32,25 @@ const secondUser = {
   password: 'Apod123'
 }
 
+const thirdUser = {
+  username: 'morphism',
+  password: 'Apod123'
+}
+
+
 describe('Users test', () => {
   before(async () => {
     try {
       await UserModel.deleteMany({})
 
       const registeredUser = await UserModel.create(firstUser)
-
       const secondRegisteredUser = await UserModel.create(secondUser)
+      const thirdRegisteredUser = await UserModel.create(thirdUser)
+
+
+      await UserModel.findByIdAndUpdate(registeredUser._id, { $push: { friends: thirdRegisteredUser } })
+      await UserModel.findByIdAndUpdate(thirdRegisteredUser._id, { $push: { friends: registeredUser } })
+      await UserModel.findByIdAndUpdate(secondRegisteredUser._id, { $push: { pendingFriends: thirdRegisteredUser } })
 
       userToken = jwt.sign({
         id: registeredUser._id,
@@ -48,6 +60,11 @@ describe('Users test', () => {
       secondUserToken = jwt.sign({
         id: secondRegisteredUser._id,
         username: secondRegisteredUser.username
+      })
+
+      thirdUserToken = jwt.sign({
+        id: thirdRegisteredUser._id,
+        username: thirdRegisteredUser.username
       })
     } catch (err) {
       console.error(err)
@@ -61,7 +78,6 @@ describe('Users test', () => {
       console.error(err)
     }
   })
-
   describe('POST /users/register', () => {
     const { userRegister } = endpoint
 
@@ -328,15 +344,16 @@ describe('Users test', () => {
 
   describe('POST /users/profile/:username/friends', () => {
     const { addAFriend } = endpoint
-    const selfUsername = firstUser.username
-    const targetUsername = secondUser.username
 
     describe('ON SUCCESS', () => {
-      it('should return status 200 an empty object', (done) => {
+      const selfUsername = firstUser.username
+      const targetUsername = secondUser.username
 
+      it('should return status 200 an empty object', (done) => {
         chai
         .request(app)
         .post(addAFriend(selfUsername))
+        .set('content-type', 'application/json')
         .set('authentication', userToken)
         .send({ targetUsername })
         .end((err, res) => {
@@ -354,10 +371,33 @@ describe('Users test', () => {
     })
 
     describe('ON FAIL', () => {
+      const selfUsername = firstUser.username
+      const targetUsername = thirdUser.username
+
+      it('should return status 400 and { object error } if user does not send mandatory parameter', (done) => {
+        chai
+        .request(app)
+        .post(addAFriend(selfUsername))
+        .set('content-type', 'application/json')
+        .set('authentication', userToken)
+        .end((err, res) => {
+          expect(err).to.equal(null)
+          expect(res).to.have.status(400)
+          expect(res.body).to.be.an('object')
+          expect(res.body).to.have.property('status')
+          expect(res.body).to.have.property('message')
+          expect(res.body.status).to.be.a('string').and.equal('fail')
+          expect(res.body.message).to.be.a('string').and.equal('Invalid mandatory parameter(s)')
+
+          done()
+        })
+      })
+
       it('should return status 400 and { object error } if user adds himself', (done) => {
         chai
         .request(app)
         .post(addAFriend(selfUsername))
+        .set('content-type', 'application/json')
         .set('authentication', userToken)
         .send({ targetUsername: selfUsername })
         .end((err, res) => {
@@ -368,6 +408,24 @@ describe('Users test', () => {
           expect(res.body).to.have.property('message')
           expect(res.body.status).to.be.a('string').and.equal('fail')
           expect(res.body.message).to.be.a('string').and.equal('Cannot send a friend request to oneself')
+
+          done()
+        })
+      })
+
+      it('should return status 401 and { object error } if user is unauthenticated', (done) => {
+        chai
+        .request(app)
+        .post(addAFriend(selfUsername))
+        .send({ targetUsername })
+        .end((err, res) => {
+          expect(err).to.equal(null)
+          expect(res).to.have.status(401)
+          expect(res.body).to.be.an('object')
+          expect(res.body).to.have.property('status')
+          expect(res.body).to.have.property('message')
+          expect(res.body.status).to.be.a('string').and.equal('fail')
+          expect(res.body.message).to.be.a('string').and.equal('You are not authenticated. Please login.')
 
           done()
         })
@@ -387,6 +445,25 @@ describe('Users test', () => {
           expect(res.body).to.have.property('message')
           expect(res.body.status).to.be.a('string').and.equal('fail')
           expect(res.body.message).to.be.a('string').and.equal('The requested username was not found')
+
+          done()
+        })
+      })
+
+      it('should return status 409 and { object error } if user adds friend that already on his friends list', (done) => {
+        chai
+        .request(app)
+        .post(addAFriend(selfUsername))
+        .set('authentication', userToken)
+        .send({ targetUsername })
+        .end((err, res) => {
+          expect(err).to.equal(null)
+          expect(res).to.have.status(409)
+          expect(res.body).to.be.an('object')
+          expect(res.body).to.have.property('status')
+          expect(res.body).to.have.property('message')
+          expect(res.body.status).to.be.a('string').and.equal('fail')
+          expect(res.body.message).to.be.a('string').and.equal(`${targetUsername} is already on your friends list`)
 
           done()
         })
@@ -413,6 +490,26 @@ describe('Users test', () => {
           expect(res.body).to.have.property('data')
           expect(res.body.status).to.be.a('string').and.equal('success')
           expect(res.body.data).to.be.an('object')
+
+          done()
+        })
+      })
+    })
+
+    describe('ON FAIL', () => {
+      it('should return 404 and { object error } if the user accepts a username that does not exist on pending request', (done) => {
+        chai
+        .request(app)
+        .put(acceptFriendRequest(selfUsername, targetUsername))
+        .set('authentication', secondUserToken)
+        .end((err, res) => {
+          expect(err).to.equal(null)
+          expect(res).to.have.status(404)
+          expect(res.body).to.be.an('object')
+          expect(res.body).to.have.property('status')
+          expect(res.body).to.have.property('message')
+          expect(res.body.status).to.be.a('string').and.equal('fail')
+          expect(res.body.message).to.be.an('message').and.equal(`Username ${targetUsername} doesn't exist on pending requests`)
 
           done()
         })
