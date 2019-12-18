@@ -1,6 +1,6 @@
 # NASA APOD
 
-[![Build Status](https://travis-ci.org/vyonizr/apod-app.svg?branch=develop)](https://travis-ci.org/vyonizr/apod-app) [![codecov](https://codecov.io/gh/vyonizr/apod-app/branch/develop/graph/badge.svg)](https://codecov.io/gh/vyonizr/apod-app) [![Greenkeeper badge](https://badges.greenkeeper.io/vyonizr/apod-app.svg)](https://greenkeeper.io/)
+[![Build Status](https://travis-ci.org/vyonizr/apod-app.svg?branch=develop)](https://travis-ci.org/vyonizr/apod-app) [![codecov](https://codecov.io/gh/vyonizr/apod-app/branch/develop/graph/badge.svg)](https://codecov.io/gh/vyonizr/apod-app) [![Known Vulnerabilities](https://snyk.io/test/github/vyonizr/apod-app/badge.svg?targetFile=server/package.json)](https://snyk.io/test/github/vyonizr/apod-app?targetFile=server/package.json) [![Greenkeeper badge](https://badges.greenkeeper.io/vyonizr/apod-app.svg)](https://greenkeeper.io/)
 
 ## Routes
 
