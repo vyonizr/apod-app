@@ -30,7 +30,6 @@ describe('Pictures test', () => {
       })
 
       const { data } = await fetchAPOD(sampleDate)
-
       const createdPicture = await PictureModel.create(data)
 
       pictureID = createdPicture._id
