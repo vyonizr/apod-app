@@ -2,9 +2,10 @@ const { jwt } = require('../helpers')
 
 module.exports = (req, res, next) => {
   const { authentication } = req.headers
+
   if (authentication) {
     const decodedToken = jwt.verify(authentication)
-    req.authenticatedUser = decodedToken
+    res.locals.authenticatedUser = decodedToken
     next()
   }
   else {
