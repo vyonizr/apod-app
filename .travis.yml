@@ -15,7 +15,6 @@ install:
   - npm install -g codecov
   - cd server
   - yarn install --check-files
-  - yarn add dotenv
 script:
   - yarn test
   - yarn coverage -t $CODECOV_TOKEN
