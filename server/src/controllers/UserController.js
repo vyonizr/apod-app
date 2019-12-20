@@ -127,26 +127,20 @@ class UserController {
   }
 
   static async addAFriend(req, res) {
-    const { username } = req.params
-    const { id } = req.authenticatedUser
+    const { id } = res.locals.authenticatedUser
     const { targetUsername } = req.body
 
     try {
-      if (targetUsername === username) {
-        setError('Cannot send a friend request to oneself', 400)
+      const updatedUser = await UserModel.findOneAndUpdate({ username: targetUsername }, { $addToSet: { pendingFriends: id } }, { new: true })
+
+      if (updatedUser) {
+        res.status(200).json({
+          status: 'success',
+          data: {}
+        })
       }
       else {
-        const updatedUser = await UserModel.findOneAndUpdate({ username: targetUsername }, { $addToSet: { pendingFriends: id } }, { new: true })
-
-        if (updatedUser) {
-          res.status(200).json({
-            status: 'success',
-            data: {}
-          })
-        }
-        else {
-          setError('The requested username was not found', 404)
-        }
+        setError('The requested username was not found', 404)
       }
     }
     catch (err) {
@@ -166,12 +160,11 @@ class UserController {
   }
 
   static async rejectAFriendRequest(req, res) {
-    const { username } = req.params
-    const { id } =req.authenticatedUser
+    const { id } = res.locals.authenticatedUser
+    const { targetUserID } = res.locals
 
     try {
-      const rejectedUserID = UserModel.findOne({ username }, '_id')
-      await UserModel.findByIdAndUpdate(id, { $pull: { pendingFriends: rejectedUserID } }, { new: true })
+      await UserModel.findByIdAndUpdate(targetUserID, { $pull: { pendingFriends: id } })
 
       res.status(200).json({
         status: 'success',
@@ -187,13 +180,12 @@ class UserController {
   }
 
   static async acceptAFriendRequest(req, res) {
-    const { friendUsername } = req.params
-    const { id } =req.authenticatedUser
+    const { id } = res.locals.authenticatedUser
+    const { targetUserID } = res.locals
 
     try {
-      const acceptedUser = await UserModel.findOne({ username: friendUsername }, '_id')
-
-      await UserModel.findByIdAndUpdate(id, { $addToSet: { friends: acceptedUser._id } }, { new: true })
+      await UserModel.findByIdAndUpdate(targetUserID, { $pull: { pendingFriends: id }, $push: { friends: id } })
+      await UserModel.findByIdAndUpdate(id, { $addToSet: { friends: targetUserID } })
 
       res.status(200).json({
         status: 'success',
@@ -209,18 +201,14 @@ class UserController {
   }
 
   static async removeAFriend(req, res) {
-    const { username } = req.body
-    const { id } = req.authenticatedUser
-    const loggedInUsername = req.authenticatedUser.username
+    const { targetUsername } = req.body
+    const { id } = res.locals.authenticatedUser
 
     try {
-      if (loggedInUsername === username) {
-        setError('Cannot unfriend oneself', 400)
-      }
-      else {
-        const removedUserID = UserModel.findOne({ username }, '_id')
-        await UserModel.findByIdAndUpdate(id, { $pull: { friends: removedUserID } }, { new: true })
-      }
+      const removedUser = UserModel.find({ targetUsername }, '_id ')
+
+      await UserModel.findByIdAndUpdate(removedUser._id, { $pull: { friends: id } })
+      await UserModel.findByIdAndUpdate(id, { $pull: { friends: removedUser._id } })
 
       res.status(200).json({
         status: 'success',
@@ -228,18 +216,10 @@ class UserController {
       })
     }
     catch (err) {
-      if (err.name = 'CustomError') {
-        res.status(err.statusCode).json({
-          status: 'fail',
-          message: err.message
-        })
-      }
-      else {
-        res.status(500).json({
-          status: 'fail',
-          message: err
-        })
-      }
+      res.status(500).json({
+        status: 'fail',
+        message: err
+      })
     }
   }
 }
