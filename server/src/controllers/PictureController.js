@@ -27,7 +27,7 @@ class PictureController {
 
   static async addToFavorites(req, res) {
     const { date } = req.body
-    const { id } = req.authenticatedUser
+    const { id } = res.locals.authenticatedUser
 
     try {
       const updatedPicture = await PictureModel.findOneAndUpdate( { date }, { $addToSet: { favoritedBy: id } }, { new: true })
@@ -59,7 +59,7 @@ class PictureController {
 
   static async removeFromFavorites(req, res) {
     const { pictureID } = req.params
-    const { id } = req.authenticatedUser
+    const { id } = res.locals.authenticatedUser
     try {
       await UserModel.findByIdAndUpdate(id, {
         $pull: {
