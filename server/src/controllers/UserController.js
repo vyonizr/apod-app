@@ -201,19 +201,14 @@ class UserController {
   }
 
   static async removeAFriend(req, res) {
-    const { targetUsername } = req.body
+    const { username } = req.params
     const { id } = res.locals.authenticatedUser
 
     try {
-      const removedUser = UserModel.find({ targetUsername }, '_id ')
+      const removedUser = await UserModel.findOneAndUpdate({ username }, { $pull: { friends: id } }, { new: true })
+      await UserModel.findByIdAndUpdate(id, { $pull: { friends: { _id: removedUser._id } } })
 
-      await UserModel.findByIdAndUpdate(removedUser._id, { $pull: { friends: id } })
-      await UserModel.findByIdAndUpdate(id, { $pull: { friends: removedUser._id } })
-
-      res.status(200).json({
-        status: 'success',
-        data: {}
-      })
+      res.status(204).end()
     }
     catch (err) {
       res.status(500).json({

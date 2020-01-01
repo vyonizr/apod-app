@@ -11,11 +11,11 @@ chai.use(chaiHttp)
 const endpoint = {
   userRegister: '/users/register',
   userLogin: '/users/login',
-  getAUser: (username) => `/users/profile/${username}`,
+  getAUser: (username) => username ? `/users/profile/${username}` : '/users/profile/',
   addAFriend: '/friends/',
   acceptFriendRequest: '/friends/accept',
   rejectFriendRequest: '/friends/reject',
-  removeAFriend: '/friends/remove'
+  removeAFriend: (username) => username ? `/friends/${username}` : '/friends/'
 }
 
 const notFoundUsername = 'notfounduser'
@@ -46,7 +46,6 @@ describe('Users test', () => {
       const registeredUser = await UserModel.create(firstUser)
       const secondRegisteredUser = await UserModel.create(secondUser)
       const thirdRegisteredUser = await UserModel.create(thirdUser)
-
 
       await UserModel.findByIdAndUpdate(registeredUser._id, { $push: { friends: thirdRegisteredUser } })
       await UserModel.findByIdAndUpdate(thirdRegisteredUser._id, { $push: { friends: registeredUser } })
@@ -325,6 +324,18 @@ describe('Users test', () => {
     })
 
     describe('ON FAIL', () => {
+      it('should return status 404 and { object error } if user does not send mandatory parameter', (done) => {
+        chai
+        .request(app)
+        .get(getAUser())
+        .end((err, res) => {
+          expect(err).to.equal(null)
+          expect(res).to.have.status(404)
+
+          done()
+        })
+      })
+
       it('should return status 404 and { object error } when username is not found', (done) => {
         chai
         .request(app)
@@ -597,6 +608,57 @@ describe('Users test', () => {
           expect(res.body).to.have.property('message')
           expect(res.body.status).to.be.a('string').and.equal('fail')
           expect(res.body.message).to.be.a('string').and.equal(`Username annapurna does not exist on pending requests`)
+
+          done()
+        })
+      })
+    })
+  })
+
+  describe('DELETE /friends/:username', () => {
+    const { removeAFriend } = endpoint
+    const targetUsername = secondUser.username
+
+    describe('ON SUCCESS', () => {
+      it('should return status 204', (done) => {
+        chai
+        .request(app)
+        .delete(removeAFriend(targetUsername))
+        .set('content-type', 'application/json')
+        .set('authentication', userToken)
+        .end((err, res) => {
+          expect(err).to.equal(null)
+          expect(res).to.have.status(204)
+
+          done()
+        })
+      })
+    })
+
+    describe('ON FAIL', () => {
+      it('should return status 404 and { object error } if user does not send mandatory parameter', (done) => {
+        chai
+        .request(app)
+        .delete(removeAFriend())
+        .set('content-type', 'application/json')
+        .set('authentication', userToken)
+        .end((err, res) => {
+          expect(err).to.equal(null)
+          expect(res).to.have.status(404)
+
+          done()
+        })
+      })
+
+      it('should return status 404 and { object error } if user deletes a user that does not exist on the friends list', (done) => {
+        chai
+        .request(app)
+        .delete(removeAFriend(targetUsername))
+        .set('content-type', 'application/json')
+        .set('authentication', userToken)
+        .end((err, res) => {
+          expect(err).to.equal(null)
+          expect(res).to.have.status(404)
 
           done()
         })
