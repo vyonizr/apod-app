@@ -18,10 +18,15 @@ class PictureController {
     }
     catch (err) {
       const { data } = err.response
-      res.status(data.code).json({
-        status: 'error',
-        message: data.msg
-      })
+      if (data && data.code && data.msg) {
+        res.status(data.code).json({
+          status: 'error',
+          message: data.msg
+        })
+      }
+      else {
+        res.status(500).end()
+      }
     }
   }
 

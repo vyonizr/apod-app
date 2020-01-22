@@ -20,16 +20,8 @@ let databaseURL = environment === 'test' || environment === 'dev'
 ? 'mongodb://localhost:27017/nasa-apod-api'
 : `mongodb://${process.env.MLAB_USERNAME}:${process.env.MLAB_PASSWORD}@ds151697.mlab.com:51697/heroku_g4q3rqql`
 
-switch(environment) {
-  case 'test': {
-    databaseURL += '-test'
-  }
-  break;
-
-  case 'prod': {
-    databaseURL += '-prod'
-  }
-  break;
+if (environment === 'test') {
+  databaseURL += '-test'
 }
 
 mongoose.connect(databaseURL, { useNewUrlParser: true, useUnifiedTopology: true })
