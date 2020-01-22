@@ -3,8 +3,9 @@ require('dotenv').config()
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
-const PORT = process.env.PORT || 80
+const PORT = process.env.PORT || 2048
 const routes = require('./routes')
+const environment = process.env.NODE_ENV
 
 const app = express()
 app.use(cors())
@@ -15,9 +16,11 @@ app.use('/', routes)
 mongoose.set('useCreateIndex', true)
 mongoose.set('useFindAndModify', false)
 
-let databaseURL = 'mongodb://localhost:27017/nasa-apod-api'
+let databaseURL = environment === 'test' || environment === 'dev'
+? 'mongodb://localhost:27017/nasa-apod-api'
+: `mongodb://${process.env.MLAB_USERNAME}:${process.env.MLAB_PASSWORD}@ds151697.mlab.com:51697/heroku_g4q3rqql`
 
-switch(process.env.NODE_ENV) {
+switch(environment) {
   case 'test': {
     databaseURL += '-test'
   }
