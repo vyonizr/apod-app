@@ -1,0 +1,13 @@
+{
+  "name": "apod-app",
+  "version": "1.0.0",
+  "description": "APoD app",
+  "main": "index.js",
+  "repository": "https://github.com/vyonizr/apod-app.git",
+  "author": "Fitrahtur Rahman <fitrahtur@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "postinstall": "cd server && yarn install"
+  }
+}

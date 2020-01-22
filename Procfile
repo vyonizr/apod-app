@@ -1,0 +1,1 @@
+web: NODE_ENV=prod node server/src/index.js
