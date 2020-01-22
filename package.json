@@ -9,5 +9,9 @@
   "private": true,
   "scripts": {
     "postinstall": "cd server && yarn install"
+  },
+  "engines": {
+    "node": "8.17.0",
+    "yarn": "1.21.1"
   }
 }
