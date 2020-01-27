@@ -8,7 +8,7 @@ module.exports = async (req, res, next) => {
   ? req.params.username
   : null
 
-  const targetUser = await UserModel.findOne({ username: targetUsername }, 'friends')
+  const targetUser = await UserModel.findOne({ username: targetUsername }, 'id friends')
   const isAlreadyAFriend = targetUser ? targetUser.friends.some(friendID => String(friendID) === id) : false
 
   if (!targetUser) {
@@ -30,6 +30,7 @@ module.exports = async (req, res, next) => {
     })
   }
   else {
+    res.locals.targetUserID = targetUser._id
     next()
   }
 }
