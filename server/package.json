@@ -7,7 +7,6 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=dev nodemon src/index.js",
-    "dev-cloud": "NODE_ENV=dev-cloud nodemon src/index.js",
     "test": "NODE_ENV=test nyc mocha src/__test__ --timeout=5000 --exit",
     "coverage": "NODE_ENV=test nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "prod": "NODE_ENV=prod nodemon src/index.js"
@@ -31,7 +30,7 @@
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "codecov": "^3.6.1",
-    "mocha": "^6.2.2",
+    "mocha": "^7.0.1",
     "nodemon": "^2.0.1",
     "nyc": "^15.0.0"
   }

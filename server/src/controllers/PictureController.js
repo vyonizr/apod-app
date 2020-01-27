@@ -9,12 +9,23 @@ class PictureController {
     }
 
     try {
-      const { data } = await fetchAPOD(date)
+      const pictureInDB = await PictureModel.findOne({ date })
 
-      res.status(200).json({
-        status: 'success',
-        data
-      })
+      if (pictureInDB) {
+        res.status(200).json({
+          status: 'success',
+          data: pictureInDB
+        })
+      }
+      else {
+        const { data } = await fetchAPOD(date)
+        const createdPicture = await PictureModel.create(data)
+        res.status(200).json({
+          status: 'success',
+          data: createdPicture
+        })
+      }
+
     }
     catch (err) {
       const { data } = err.response
@@ -35,7 +46,7 @@ class PictureController {
     const { id } = res.locals.authenticatedUser
 
     try {
-      const updatedPicture = await PictureModel.findOneAndUpdate( { date }, { $addToSet: { favoritedBy: id } }, { new: true })
+      const updatedPicture = await PictureModel.findOneAndUpdate({ date }, { $addToSet: { favoritedBy: id } }, { new: true })
 
       if (updatedPicture) {
         res.status(200).json({
